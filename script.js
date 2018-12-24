@@ -9,10 +9,6 @@ const camera = new THREE.PerspectiveCamera(45, windowWidth / windowHeight, 1, 10
 camera.position.z = 75;
 scene.add(camera);
 
-const controls = new THREE.OrbitControls( camera );
-controls.minDistance = 75;
-controls.maxDistance = 200;
-controls.enablePan = false;
 
 // Renderer
 const renderer = new THREE.WebGLRenderer();
@@ -26,21 +22,6 @@ const light1 = new THREE.PointLight( 0xFFFFFF, 1, 100 );
 light1.position.z = 50;
 light1.position.x = 0;
 scene.add( light1 );
-
-// Cube
-// const geometry = new THREE.BoxGeometry(1,1,1);
-// const material = new THREE.MeshLambertMaterial({color: 0xaa77ff});
-// const cube = new THREE.Mesh(geometry, material);
-// scene.add(cube);
-
-// Line
-// const material = new THREE.LineBasicMaterial({color:0xaaaaff});
-// const geometry = new THREE.Geometry();
-// geometry.vertices.push(new THREE.Vector3(-10, 0, 0));
-// geometry.vertices.push(new THREE.Vector3(0, 10, 0));
-// geometry.vertices.push(new THREE.Vector3(10, 0, 0));
-// const line = new THREE.Line(geometry, material);
-// scene.add(line);
 
 // Sphere
 const geometry = new THREE.SphereGeometry( 15, 32, 32 );
@@ -62,38 +43,36 @@ for ( i = 0; i < faceVertexUvs.length; i ++ ) {
   }
 }
 const sphere = new THREE.Mesh( geometry, material );
+const origin = new THREE.Vector3(0, 0, 75);
 sphere.position.x = 0;
 sphere.position.z = 0;
-sphere.lookAt(new THREE.Vector3(0, 0, 0));
+sphere.lookAt(origin);
 scene.add( sphere );
-
-var marker = new THREE.Mesh(new THREE.SphereGeometry(0.062, 4, 2), new THREE.MeshBasicMaterial({
-  color: "red"
-}));
-scene.add(marker);
 
 window.addEventListener("mousemove", onmousemove, false);
 
-var plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-var raycaster = new THREE.Raycaster();
-var mouse = new THREE.Vector2();
-var intersectPoint = new THREE.Vector3();
+var target = new THREE.Vector3();
+var mouseX = 0, mouseY = 0;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
 
 function onmousemove(event) {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  raycaster.ray.intersectPlane(plane, intersectPoint);
-  intersectPoint.z = 75;
-  sphere.lookAt(intersectPoint);
-  marker.position.copy(intersectPoint);
+  mouseX = ( event.clientX - windowHalfX );
+  mouseY = ( event.clientY - windowHalfY );
+}
+
+function lookAtMouse() {
+  target.x += ( mouseX - target.x ) * 0.04;
+  target.y += ( - mouseY - target.y ) * 0.04;
+  target.z = 75*5; // assuming the camera is located at ( 0, 0, z );
+
+  sphere.lookAt( target );
 }
 
 function animate() {
   requestAnimationFrame(animate);
 
-  //sphere.rotation.x += 0.01;
-  //sphere.rotation.y += 0.01;
+  lookAtMouse();
 
   //controls.update();
   renderer.render(scene, camera);
